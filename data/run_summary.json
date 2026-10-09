@@ -1,0 +1,17 @@
+{
+  "n_assets": 16,
+  "oos_start": "2022-01-01",
+  "oos_end": "2026-10-08",
+  "oos_days": 1742,
+  "n_formation_windows": 83,
+  "avg_pairs_per_window": 8.88,
+  "unique_pairs_traded": 120,
+  "avg_daily_turnover": 0.0325,
+  "avg_active_pairs": 8.99,
+  "cost_bps_per_leg": 20.0,
+  "form_days": 180,
+  "step_days": 21,
+  "z_entry": 2.0,
+  "z_exit": 0.5,
+  "z_stop": 4.0
+}

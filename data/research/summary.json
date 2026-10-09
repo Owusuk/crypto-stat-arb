@@ -1,0 +1,26 @@
+{
+  "sample_start": "2021-01-01",
+  "sample_end": "2026-10-08",
+  "bt_start": "2021-12-28",
+  "bt_end": "2026-10-08",
+  "is_end": "2023-12-31",
+  "oos_start": "2024-01-01",
+  "n_days": 1746,
+  "n_assets": 16,
+  "momentum_selected": "Momentum ensemble",
+  "momentum_components": [
+    "TS momentum blend H=1 + DVOL filter",
+    "Theme momentum L=14 H=7",
+    "CS momentum L=14 H=7"
+  ],
+  "single_best_momentum": "Theme momentum L=14 H=7",
+  "reversal_selected": "Long-horizon reversal L=60 skip=14 H=14",
+  "execution_selected": {
+    "Momentum": "No-trade band 2%",
+    "Reversal": "Hold 3d (overlapping)"
+  },
+  "weighting_selected": "Mean-variance (shrunk)",
+  "market_bps": 20.0,
+  "limit_bps": 7.0,
+  "n_candidates": 44
+}
