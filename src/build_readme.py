@@ -31,7 +31,6 @@ c = "Combined portfolio"
 txt = f"""# Statistical Arbitrage in Cryptocurrencies - Version 2
 
 Momentum and reversal research on a survivorship-free crypto universe - Wall Street Quants Bootcamp Project.
-Revised after trainer feedback (see "Changes in version 2").
 
 ## Hold-out result (read this first)
 
@@ -57,13 +56,13 @@ with an implied-volatility (DVOL) filter is the one component that held up
 
 ## Changes in version 2
 
-| Trainer comment | Version 2 change | Effect |
+| V1 | V2 | Effect |
 |---|---|---|
-| Sharpe used sqrt(365) | mean / std x sqrt(252) everywhere | V1 combined Sharpe 1.02 -> {f2(V1['sharpe_full_252'])} (full), 0.55 -> {f2(V1['sharpe_oos_252'])} (hold-out) |
-| Hold-out not untouched (exploration on 2021-2026) | Pre-registered mechanical protocol on 2021-2023 only | True out-of-sample hold-out: Sharpe {f2(OOS.loc[c, 'Sharpe'])} |
-| Lead with hold-out; add correlation to BTC | Hold-out first everywhere; `Corr BTC` in every table | Hold-out alpha t {f2(OOS.loc[c, 'Alpha t'])}, corr {f2(OOS.loc[c, 'Corr BTC'])} |
+| Sharpe annualised with sqrt(365) | mean / std x sqrt(252) everywhere | V1 combined Sharpe 1.02 -> {f2(V1['sharpe_full_252'])} (full), 0.55 -> {f2(V1['sharpe_oos_252'])} (hold-out) |
+| Exploration on the full 2021-2026 sample, so the hold-out was not untouched | Pre-registered mechanical protocol on 2021-2023 only | True out-of-sample hold-out: Sharpe {f2(OOS.loc[c, 'Sharpe'])} |
+| Full-sample results reported first; no correlation to BTC | Hold-out first everywhere; `Corr BTC` in every table | Hold-out alpha t {f2(OOS.loc[c, 'Alpha t'])}, corr {f2(OOS.loc[c, 'Corr BTC'])} |
 | 16 coins that survived to 2026 | Top 40 by market cap on 2021-01-03 (ex stablecoins / wrapped); {n_in} with data | Failures (FTT, EOS, MKR exits) included |
-| Be able to explain and rebuild | `src/minimal_backtest.py` + `V2_methodology_explainer.docx` | Rebuild matches the engine exactly |
+| No standalone rebuild or methodology guide | `src/minimal_backtest.py` + `V2_methodology_explainer.docx` | Rebuild matches the engine exactly |
 
 ## Protocol (all on 2021-07 to 2023-12)
 
