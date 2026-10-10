@@ -243,7 +243,7 @@ box(s, 10.9, 3.6, 3.6, 3.6, fill=NAVY2, shape=MSO_SHAPE.OVAL)
 text(s, 0.9, 1.55, 11, 0.5, [[Rn("WALL STREET QUANTS  |  BOOTCAMP PROJECT  |  VERSION 2", 15, ICE, True)]])
 text(s, 0.9, 2.15, 11.2, 2.0, [[Rn("Statistical Arbitrage in", 44, WHITE, True, False, HEAD)],
                               [Rn("Cryptocurrency Markets", 44, WHITE, True, False, HEAD)]], space_after=2)
-text(s, 0.9, 4.05, 11, 0.6, [[Rn(f"Momentum and reversal on a survivorship-free {n_in}-coin universe, revised after trainer feedback", 18, ICE, False, True)]])
+text(s, 0.9, 4.05, 11, 0.6, [[Rn(f"Momentum and reversal on a survivorship-free {n_in}-coin universe", 18, ICE, False, True)]])
 for i, (lab, val) in enumerate([("Hold-out Sharpe (x sqrt 252)", num(co["Sharpe"])),
                                 ("Hold-out alpha t-stat", num(co["Alpha t"])),
                                 ("Hold-out correlation to BTC", num(co["Corr BTC"]))]):
@@ -275,17 +275,17 @@ footer(s, "Sharpe = mean / std x sqrt(252). Momentum at 20 bps, reversal at 7 bp
 pagenum(s)
 
 # =========================================================================== #
-# 3. Trainer feedback
+# 3. V1 vs V2
 # =========================================================================== #
 s = slide(); bg(s, WHITE)
-title_bar(s, "Version 2", "What the trainer asked for, and what changed")
-rows = [("Feedback", "Version 2 change", "Effect")]
-rows += [("Sharpe used sqrt(365)", "mean / std x sqrt(252) everywhere", f"V1 1.02 -> {num(V1['sharpe_full_252'])}"),
-         ("Hold-out not untouched", "Mechanical protocol on 2021-23 only", f"True hold-out: {num(co['Sharpe'])}"),
-         ("Lead with hold-out; add corr", "Hold-out first; corr to BTC in all tables", f"alpha t {num(co['Alpha t'])}, corr {num(co['Corr BTC'])}"),
-         ("16 survivors", f"Top 40 by Jan-2021 market cap ({n_in} with data)", "FTT, EOS, MKR exits included"),
-         ("Explain and rebuild", "60-line rebuild + methodology explainer", "Matches engine to 1e-12")]
-grid_table(s, 0.7, 1.9, [3.0, 4.9, 4.0], rows, rh=0.75, size=13, head_size=13)
+title_bar(s, "Version 2", "What changed from V1 to V2")
+rows = [("V1", "V2", "Effect")]
+rows += [("Sharpe with sqrt(365)", "mean / std x sqrt(252) everywhere", f"V1 1.02 -> {num(V1['sharpe_full_252'])}"),
+         ("Exploration on full 2021-26 sample", "Mechanical protocol on 2021-23 only", f"True hold-out: {num(co['Sharpe'])}"),
+         ("Full sample first; no corr to BTC", "Hold-out first; corr to BTC in all tables", f"alpha t {num(co['Alpha t'])}, corr {num(co['Corr BTC'])}"),
+         ("16 coins alive in 2026", f"Top 40 by Jan-2021 market cap ({n_in} with data)", "FTT, EOS, MKR exits included"),
+         ("No rebuild or methodology guide", "60-line rebuild + methodology explainer", "Matches engine to 1e-12")]
+grid_table(s, 0.7, 1.9, [3.6, 4.6, 3.7], rows, rh=0.75, size=13, head_size=13)
 pagenum(s)
 
 # =========================================================================== #

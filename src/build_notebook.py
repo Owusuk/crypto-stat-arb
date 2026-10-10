@@ -27,20 +27,20 @@ def code(t): cells.append(nbf.v4.new_code_cell(clean(t)))
 md(f"""# Statistical Arbitrage in Cryptocurrencies - Version 2
 
 **Wall Street Quants - Bootcamp Project.** Momentum and reversal research on a survivorship-free universe of
-{S['n_assets']} coins, revised after trainer feedback. Data {S['sample_start']} to {S['sample_end']}.
+{S['n_assets']} coins. Data {S['sample_start']} to {S['sample_end']}.
 
 **Hold-out result first ({S['oos_start']} to {S['sample_end']}, never used for any decision):** combined portfolio
 Sharpe **{co['Sharpe']:.2f}** (mean / std x sqrt(252)), alpha {co['Alpha']*100:.1f}% a year with t = **{co['Alpha t']:.2f}**,
 beta {co['Beta']:.2f}, correlation to BTC **{co['Corr BTC']:.2f}**. Research period (2021-2023): Sharpe {ci['Sharpe']:.2f},
 alpha t {ci['Alpha t']:.2f}.
 
-| Trainer comment | Version 2 change |
-|---|---|
-| Sharpe used sqrt(365) | `sa_core.ANN = 252`: Sharpe = mean / std x sqrt(252) |
-| Hold-out contaminated by full-sample exploration | Mechanical protocol: directions, candidates, books, execution and weighting all chosen on 2021-2023 only |
-| Lead with hold-out, add correlation to BTC | Hold-out first in every table; `Corr BTC` column added |
-| 16 survivors | Top 40 coins by market cap on 2021-01-03 (ex stablecoins / wrapped), delisted coins kept |
-| Explain and rebuild | `src/minimal_backtest.py` (60 lines, checked against the engine) and `V2_methodology_explainer.docx` |
+| V1 | V2 | Effect |
+|---|---|---|
+| Sharpe annualised with sqrt(365) | `sa_core.ANN = 252`: Sharpe = mean / std x sqrt(252) | V1 combined Sharpe 1.02 -> 0.85 (full), 0.55 -> 0.46 (hold-out) |
+| Exploration on the full 2021-2026 sample | Mechanical protocol: directions, candidates, books, execution and weighting all chosen on 2021-2023 only | True out-of-sample hold-out |
+| Full-sample results first; no correlation to BTC | Hold-out first in every table; `Corr BTC` column added | Hold-out alpha t and correlation visible |
+| 16 coins that survived to 2026 | Top 40 coins by market cap on 2021-01-03 (ex stablecoins / wrapped), delisted coins kept | No survivorship bias |
+| No standalone rebuild or methodology guide | `src/minimal_backtest.py` (60 lines, checked against the engine) and `V2_methodology_explainer.docx` | Rebuild matches the engine exactly |
 """)
 
 md("## 0. Setup")

@@ -102,7 +102,7 @@ para("Momentum and Reversal Research on Live Market Data - Version 2", italic=Tr
 para("Wall Street Quants - Bootcamp Project", size=12, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=4)
 para(f"Survivorship-free universe of {n_in} coins | data {S['sample_start']} to {S['sample_end']}",
      size=11, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=4)
-para("Revised after trainer feedback, October 2026", size=11, align=WD_ALIGN_PARAGRAPH.CENTER)
+para("October 2026", size=11, align=WD_ALIGN_PARAGRAPH.CENTER)
 doc.add_page_break()
 heading("Contents", 1)
 add_toc()
@@ -115,8 +115,8 @@ heading("Executive Summary", 1)
 para(
     "This is version 2 of the project. It answers the class brief - research momentum and reversal strategies in "
     "crypto, test them with unconstrained backtests at 20 bps (market orders) and 7 bps (limit orders), combine them "
-    "with a weighting scheme and report returns, volatility, Sharpe, drawdown and alpha / beta - and it fixes the five "
-    "points raised in the trainer's review of version 1 (Section 0).")
+    "with a weighting scheme and report returns, volatility, Sharpe, drawdown and alpha / beta - and it corrects five "
+    "issues in version 1 (Section 0).")
 para("Headline: the hold-out result", bold=True, space_after=3)
 para(
     f"All research and every design decision used only 2021-07 to 2023-12. On the untouched hold-out "
@@ -153,27 +153,28 @@ bullet(f"Version 1 reported a Sharpe of 1.02 using sqrt(365). On the class sqrt(
 # =========================================================================== #
 # 0. CHANGES
 # =========================================================================== #
-heading("0. Changes in Version 2 (Response to Trainer Feedback)", 1)
-table(["Trainer comment", "Change in version 2", "Effect"], [
-    ["Sharpe used sqrt(365); class uses mean / std x sqrt(252)",
-     "All Sharpe ratios use sqrt(252); returns, volatility and alpha are annualised with 252 days (sa_core.ANN = 252)",
+heading("0. Changes in Version 2", 1)
+table(["V1", "V2", "Effect"], [
+    ["Sharpe annualised with sqrt(365)",
+     "All Sharpe ratios = mean / std x sqrt(252); returns, volatility and alpha annualised with 252 days (sa_core.ANN = 252)",
      f"V1 combined Sharpe 1.02 -> {num(V1['sharpe_full_252'])} (full), 0.55 -> {num(V1['sharpe_oos_252'])} (hold-out)"],
-    ["Hold-out not untouched: exploration ran on 2021-2026 and the 60/90-day reversal only appears in 2024-2026",
+    ["Exploration ran on the full 2021-2026 sample, so the hold-out was not untouched (the 60/90-day reversal only "
+     "appears in 2024-2026)",
      "Pre-registered mechanical protocol: every signal's direction, every candidate, the execution rule and the "
      "weighting are chosen on 2021-07 to 2023-12 only (Section 4.4)",
      f"The hold-out is now a true out-of-sample test; the combined hold-out Sharpe is {num(co['Sharpe'])}"],
-    ["Lead with hold-out numbers; alpha t falls from 2.19 to 0.90; add correlation to BTC",
+    ["Full-sample results reported first; no correlation to BTC (hold-out alpha t was 0.90 vs 2.19 full sample)",
      "Hold-out reported first everywhere (summary, tables, README, deck); correlation to BTC added to every table",
      f"Hold-out alpha t = {num(co['Alpha t'])}; correlation to BTC = {num(co['Corr BTC'])}"],
-    ["Universe: 30+ coins by market cap at the start, not the 16 survivors",
+    ["16 coins that survived to 2026 (survivorship bias)",
      f"Top 40 coins by market cap on 2021-01-03 (stablecoins and wrapped tokens excluded); {n_in} have free data. "
      "Coins that collapsed or were delisted (FTT, EOS, MKR) are kept until their prices end",
      "Removes survivorship bias; the universe includes the FTX collapse and other failures"],
-    ["Be able to explain every choice and rebuild the backtest",
+    ["No standalone rebuild or methodology guide",
      "src/minimal_backtest.py rebuilds a strategy in ~60 lines and checks it against the engine; a separate "
      "methodology explainer covers every choice and likely interview questions",
      "Engine and minimal backtest agree to machine precision"],
-], widths=[1.8, 2.75, 1.95], size=8.5, caption=tcap("Trainer feedback and the version 2 response."))
+], widths=[1.95, 2.65, 1.9], size=8.5, caption=tcap("Changes from version 1 to version 2."))
 
 # =========================================================================== #
 # 1-2. INTRO + LITERATURE
@@ -485,7 +486,7 @@ table(["", "Version 1", "Version 1 at sqrt(252)", "Version 2"], [
     ["Combined Sharpe, hold-out", num(V1["sharpe_oos_365"]), num(V1["sharpe_oos_252"]), num(co["Sharpe"])],
     ["Alpha t, hold-out", num(V1["alpha_t_oos"]), num(V1["alpha_t_oos"]), num(co["Alpha t"])],
     ["Correlation to BTC, full", num(V1["corr_btc_full"]), num(V1["corr_btc_full"]), num(cf["Corr BTC"])],
-], widths=[1.8, 1.5, 1.6, 1.6], caption=tcap("What the trainer's corrections did to the headline numbers."))
+], widths=[1.8, 1.5, 1.6, 1.6], caption=tcap("What the version 2 corrections did to the headline numbers."))
 para("The sqrt(252) convention alone lowers every Sharpe by 17%. The larger change comes from the universe and the "
      "protocol: version 1's long-horizon reversal book was chosen partly because it worked in 2024-2026, and its "
      "16 survivors excluded the coins whose collapses make cross-sectional strategies harder. Version 2's lower "
@@ -518,7 +519,7 @@ bullet("Re-run the protocol each year as the hold-out grows, without changing it
 
 heading("12. Conclusion", 1)
 para(
-    f"Applying the trainer's corrections - the sqrt(252) convention, a survivorship-free universe of {n_in} coins and a "
+    f"Applying the version 2 corrections - the sqrt(252) convention, a survivorship-free universe of {n_in} coins and a "
     "research protocol that never touches the hold-out - turns version 1's strong result into a modest one. Crypto "
     "shows reversal across the cross-section and momentum in individual coins' own trends, and the brief's "
     "conditioning variables (activity, seasonality, themes and especially implied volatility) all leave visible "

@@ -2,7 +2,7 @@
 research.py  (V2)
 -----------------
 Momentum / reversal research programme for the WSQ crypto statistical-
-arbitrage project, rebuilt after trainer feedback.
+arbitrage project, version 2.
 
 Every block maps to an item in the class brief:
   A. Time horizon        - momentum vs reversal across look-backs (1h ... 120d)

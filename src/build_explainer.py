@@ -39,7 +39,7 @@ add_toc()
 doc.add_page_break()
 
 heading("1. How to Use This Document", 1)
-para("The trainer's last comment was: be able to explain every choice and rebuild the backtest yourself. This "
+para("The goal is to be able to explain every choice and rebuild the backtest yourself. This "
      "document is built for that. Section 2 is the project in one page. Section 3 walks through every design "
      "choice: what was done, why, what the alternative was, and how to check it. Section 4 rebuilds the backtest "
      "step by step - follow it with src/minimal_backtest.py open. Section 5 lists questions an interviewer is likely "
@@ -216,7 +216,7 @@ qa = [
     ("What is the difference between cross-sectional and time-series momentum?",
      "Cross-sectional ranks coins against each other and is dollar-neutral; time-series takes each coin long or "
      "short on its own trend and can be net long or short the market."),
-    ("How did the trainer's feedback change your results?",
+    ("How did version 2 change your results?",
      f"The Sharpe convention alone cut version 1's 1.02 to {num(V1['sharpe_full_252'])}. Removing survivorship bias "
      f"and hold-out contamination took the hold-out Sharpe from {num(V1['sharpe_oos_252'])} to {num(co['Sharpe'])}."),
     ("Did you use AI tools?",
