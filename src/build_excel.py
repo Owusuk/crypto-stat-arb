@@ -4,7 +4,7 @@ single formatted workbook: crypto_stat_arb_data.xlsx
 
 All figures are computed in Python (src/research.py, src/statarb.py) and
 written as values, so the workbook always matches the report and the deck.
-The hourly price file (~670k rows) is kept as data/crypto_hourly.csv rather
+The hourly price file (~1.5m rows) is kept as data/crypto_hourly.csv.gz rather
 than embedded.
 """
 import json
@@ -137,21 +137,23 @@ is_cmb = lambda r: str(r.iloc[0]).startswith("Combined portfolio") and "20bps" n
 # Overview
 # =========================================================================== #
 ws = wb.active; ws.title = "Overview"
-ws["A1"] = "Statistical Arbitrage in Cryptocurrencies - Data Workbook"; ws["A1"].font = title_font
+ws["A1"] = "Statistical Arbitrage in Cryptocurrencies - Data Workbook (Version 2)"; ws["A1"].font = title_font
 ws["A2"] = clean(f"Wall Street Quants Bootcamp Project | live data {S['sample_start']} to {S['sample_end']} | "
                  f"backtest {S['bt_start']} to {S['sample_end']}"); ws["A2"].font = sub_font
 c = full.set_index("Strategy").loc["Combined portfolio"]
 co = oos.set_index("Strategy").loc["Combined portfolio"]
 info = [
-    ("Data sources", "Coinbase Exchange API (daily + hourly OHLCV); Deribit DVOL (BTC implied vol)"),
-    ("Universe", "16 coins: BTC ETH SOL ADA DOGE AVAX LINK LTC DOT ATOM UNI BCH XLM ALGO AAVE COMP"),
+    ("Data sources", "Coinbase, KuCoin, Gate.io, Bitfinex public APIs (daily + hourly OHLCV); Deribit DVOL"),
+    ("Universe", f"{S['n_assets']} coins: top 40 by market cap on 2021-01-03 ex stablecoins / wrapped (see Universe sheet)"),
+    ("Annualisation", "Sharpe = mean / std x sqrt(252); return, vol and alpha x 252 (class convention)"),
     ("Research period", f"{S['bt_start']} to {S['is_end']} (all parameters chosen here)"),
     ("Hold-out period", f"{S['oos_start']} to {S['sample_end']} (never used for selection)"),
     ("Costs", "20 bps per unit turnover for market orders; 7 bps for limit orders"),
-    ("Momentum sleeve", "Ensemble: " + "; ".join(S["momentum_components"]) + f" | execution: {S['execution_selected']['Momentum']}"),
-    ("Reversal sleeve", f"{S['reversal_selected']} | execution: {S['execution_selected']['Reversal']}"),
+    ("Protocol", "Signal direction, candidates, books, execution and weighting all chosen mechanically on the research period"),
+    ("Momentum book", "; ".join(S["momentum_members"]) + f" | execution: {S['execution_selected']['Momentum']}"),
+    ("Reversal book", "; ".join(S["reversal_members"]) + f" | execution: {S['execution_selected']['Reversal']}"),
     ("Weighting", S["weighting_selected"]),
-    ("Candidates tested", str(S["n_candidates"])),
+    ("Signals / candidates tested", f"{S['n_signals']} / {S['n_candidates']}"),
 ]
 r = 4
 for k, v in info:
@@ -161,15 +163,16 @@ for k, v in info:
 r += 1
 ws.cell(row=r, column=1, value="Combined portfolio").font = Font(name=FONT, bold=True, size=12, color=NAVY)
 r += 1
-for j, h in enumerate(["Metric", "Full backtest", "Hold-out"], 1):
+ci_ = ins.set_index("Strategy").loc["Combined portfolio"]
+for j, h in enumerate(["Metric", "Hold-out", "Research", "Full backtest"], 1):
     cc = ws.cell(row=r, column=j, value=h); cc.font = hdr_font; cc.fill = hdr_fill; cc.alignment = center
 r += 1
 for lab, key, f in [("Annual return", "Ann.Return", "0.0%"), ("Annual volatility", "Ann.Vol", "0.0%"),
                     ("Sharpe ratio", "Sharpe", "0.00"), ("Max drawdown", "MaxDD", "0.0%"),
                     ("Alpha (annual, vs BTC)", "Alpha", "0.0%"), ("Beta (vs BTC)", "Beta", "0.00"),
-                    ("Alpha t-stat", "Alpha t", "0.00")]:
+                    ("Alpha t-stat", "Alpha t", "0.00"), ("Correlation to BTC", "Corr BTC", "0.00")]:
     ws.cell(row=r, column=1, value=lab).font = base_font
-    for j, src in [(2, c), (3, co)]:
+    for j, src in [(2, co), (3, ci_), (4, c)]:
         cc = ws.cell(row=r, column=j, value=float(src[key])); cc.number_format = f; cc.font = base_font
         cc.alignment = Alignment(horizontal="center")
     r += 1
@@ -177,7 +180,8 @@ r += 1
 ws.cell(row=r, column=1, value="Sheet index").font = Font(name=FONT, bold=True, size=12, color=NAVY)
 r += 1
 index_rows = [
-    ("Performance", "Returns, vol, Sharpe, max DD, alpha / beta for full, research and hold-out periods"),
+    ("Universe", "Top-40 market-cap list on 2021-01-03, data source, coverage and status"),
+    ("Performance", "Hold-out first: return, vol, Sharpe, max DD, alpha / beta, corr to BTC"),
     ("Daily Returns", "Daily net returns of every final strategy and benchmark"),
     ("Equity & Drawdown", "Growth of $1 and drawdown series"),
     ("A Horizon Scan", "Momentum vs reversal by look-back (daily)"),
@@ -188,7 +192,8 @@ index_rows = [
     ("E Front-run US", "Technical play: front-running the US session"),
     ("F Correlation", "Residual reversal and cointegrated pairs"),
     ("G Macro Regimes / G Macro Indicators", "Strategy Sharpe by volatility / dislocation regime"),
-    ("H Candidates / H Execution / H Cost Sweep", "Selection grid, execution variants, 0-200 bps sweep"),
+    ("H Directions / H Candidates", "Signal directions from the research period; ranked candidates"),
+    ("H Execution / H Cost Sweep", "Execution variants, 0-200 bps sweep"),
     ("I Weighting / I Robustness / I Correlation", "Combining momentum and reversal"),
     ("Pairs Frequency / Pairs Walk-Forward / Pairs Daily", "Cointegration engine outputs"),
     ("Raw Prices / DVOL", "Input data (daily)"),
@@ -198,16 +203,16 @@ for k, v in index_rows:
     ws.cell(row=r, column=2, value=v).font = base_font
     r += 1
 ws.column_dimensions["A"].width = 44; ws.column_dimensions["B"].width = 110
-ws.column_dimensions["C"].width = 14
+ws.column_dimensions["C"].width = 14; ws.column_dimensions["D"].width = 14
 
 # =========================================================================== #
 # Performance
 # =========================================================================== #
-perf = pd.concat([full.assign(Period="Full backtest"), ins.assign(Period="Research (IS)"),
-                  oos.assign(Period="Hold-out (OOS)")])
+perf = pd.concat([oos.assign(Period="Hold-out (OOS)"), ins.assign(Period="Research (IS)"),
+                  full.assign(Period="Full backtest")])
 perf = perf[["Period"] + [x for x in perf.columns if x != "Period"]]
 sheet("Performance", perf, "Performance evaluation",
-      "Net of costs. Alpha / beta from daily regression on BTC with Newey-West errors. 365-day year.",
+      "Net of costs, hold-out first. Sharpe x sqrt(252). Alpha / beta / corr vs daily BTC, Newey-West errors.",
       first_w=16, widths={2: 40}, highlight=lambda r_: str(r_.iloc[1]) == "Combined portfolio")
 ws = wb["Performance"]
 for row in ws.iter_rows(min_row=5, min_col=2, max_col=2):
@@ -236,12 +241,10 @@ sheet("C Weekday-Weekend", rd("C_weekday_weekend"), "C. Seasonality - weekdays v
 sheet("C Sessions", rd("C_session_returns"), "C. Seasonality - trading sessions (hourly)",
       "Equal-weight crypto and BTC mean return per hour by session (UTC), 2022 onward.", first_w=14,
       widths={2: 22})
-sheet("C Weekend Mom", rd("C_weekend_momentum"), "C. Trading the weekend season",
-      "Time-series momentum held all days vs weekends only vs weekdays only.", first_w=44)
 sheet("D Themes", rd("D_theme_momentum"), "D. Investment themes", "Theme momentum by look-back and holding period.")
 sheet("E Front-run US", rd("E_frontrun_us_session"), "E. Technical plays - front-running the US session",
       "Session strategies open and close daily (turnover 2 per day).", first_w=46)
-sheet("F Correlation", rd("F_correlation_reversal"), "F. Correlation-based reversal",
+sheet("F Correlation", rd("F_correlation"), "F. Correlation-based signals",
       "Residual reversal vs market and vs theme; cointegrated pairs (Kalman, walk-forward).", first_w=44)
 sheet("G Macro Regimes", rd("G_macro_regimes"), "G. Macro regimes",
       "Gross Sharpe by trailing-year tercile of each indicator, known before the trade.", first_w=28,
@@ -249,10 +252,12 @@ sheet("G Macro Regimes", rd("G_macro_regimes"), "G. Macro regimes",
 mi = rd("G_macro_indicators").rename(columns={"Unnamed: 0": "Date"}); mi["Date"] = pd.to_datetime(mi["Date"])
 big_sheet("G Macro Indicators", mi, "G. Macro indicators (daily)",
           "Implied vol (DVOL), realized vol, dispersion, average pairwise correlation.", fmt="0.0000")
+sheet("H Directions", rd("H_signal_directions"), "H. Signal directions (research period)",
+      "Direction = sign of research-period gross Sharpe; hold-out shown for transparency only.", first_w=28, widths={2: 34})
 sel = rd("H_candidate_selection")
 sheet("H Candidates", sel, "H. Candidate selection",
-      "Ranked by research-period net Sharpe at the family's execution cost (momentum 20 bps, reversal 7 bps).",
-      first_w=46, highlight=lambda r_: r_.iloc[0] in S["momentum_components"] + [S["reversal_selected"]])
+      "Ranked by research-period net Sharpe at the book's cost (momentum 20 bps, reversal 7 bps). Highlighted = selected.",
+      first_w=46, highlight=lambda r_: r_.iloc[0] in S["momentum_members"] + S["reversal_members"])
 sheet("H Execution", rd("H_execution_variants"), "H. Execution variants",
       "Holding periods and no-trade bands for the final books.", first_w=14, widths={2: 24})
 sheet("H Cost Sweep", rd("H_cost_sweep"), "H. Transaction-cost sweep",
@@ -261,7 +266,7 @@ sheet("I Weighting", rd("I_weighting_methods"), "I. Weighting methods",
       "Walk-forward weights from the trailing 180 days, rebalanced monthly.", first_w=26,
       highlight=lambda r_: r_.iloc[0] == S["weighting_selected"])
 sheet("I Robustness", rd("I_selection_robustness"), "I. Selection robustness",
-      "Combined portfolio under alternative momentum sleeves.", first_w=56)
+      "Family ensembles vs single best strategy per book.", first_w=56)
 sheet("I Correlation", rd("I_sleeve_correlation").rename(columns={"Unnamed: 0": "Sleeve"}),
       "I. Correlation of daily net returns", "Final sleeves, momentum components, pairs and BTC.", first_w=24)
 
@@ -281,10 +286,13 @@ big_sheet("Pairs Daily", cd, "Cointegration pairs - daily P&L", "Gross, net (20 
 # =========================================================================== #
 # Inputs
 # =========================================================================== #
+sheet("Universe", pd.read_csv("data/universe.csv"), "Survivorship-free universe",
+      "CoinMarketCap snapshot 2021-01-03, top 40 ex stablecoins / wrapped; source = venue with the most complete history.",
+      first_w=10, widths={2: 10, 3: 18, 4: 16, 5: 14, 6: 34, 7: 12, 8: 12, 9: 12})
 raw = pd.read_csv("data/crypto_raw_data.csv", parse_dates=["date"])
 big_sheet("Raw Prices", raw[["date", "asset", "open", "high", "low", "close", "volume"]].rename(columns=str.title),
-          "Daily OHLCV (Coinbase Exchange)", f"{raw['date'].min().date()} to {raw['date'].max().date()}; "
-          "includes XRP and MKR, which are excluded from the traded universe.", fmt="#,##0.0000")
+          "Daily OHLCV (Coinbase, KuCoin, Gate.io, Bitfinex)", f"{raw['date'].min().date()} to {raw['date'].max().date()}; "
+          "traded universe only (see Universe sheet).", fmt="#,##0.0000")
 ws = wb["Raw Prices"]
 for row in ws.iter_rows(min_row=5, min_col=2, max_col=2):
     for cc in row:
@@ -293,5 +301,6 @@ dv = pd.read_csv("data/dvol.csv").rename(columns={"Unnamed: 0": "Date", "date": 
 dv["Date"] = pd.to_datetime(dv["Date"])
 big_sheet("DVOL", dv, "Deribit DVOL implied volatility index", "Daily close, BTC and ETH.", fmt="0.00")
 
-wb.save("crypto_stat_arb_data.xlsx")
-print("saved crypto_stat_arb_data.xlsx with", len(wb.sheetnames), "sheets")
+wb.move_sheet("Universe", offset=-(len(wb.sheetnames) - 2))
+wb.save("crypto_stat_arb_data_V2.xlsx")
+print("saved crypto_stat_arb_data_V2.xlsx with", len(wb.sheetnames), "sheets")

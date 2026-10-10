@@ -1,0 +1,46 @@
+cmc_rank,asset,name,mcap_usd,status,reason,source,first,last,days,median_dollar_volume
+1,BTC,Bitcoin,609409213147.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,586104304.5734718
+2,ETH,Ethereum,111309985611.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,346793211.93491405
+3,USDT,Tether,21340101768.0,excluded,stablecoin,,,,,
+4,LTC,Litecoin,10610100157.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,16332553.78940253
+5,XRP,XRP,10254417777.0,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,33611172.96507009
+6,DOT,Polkadot,8995148461.0,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,4672862.908482204
+7,BCH,Bitcoin Cash,7845655333.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,6122762.586396549
+8,ADA,Cardano,6377915102.0,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,9251580.862070518
+9,BNB,Binance Coin,5942182741.0,in universe,,gate,2021-01-01,2026-10-08,2107.0,7548750.434859999
+10,LINK,Chainlink,5453374285.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,24228642.24267
+11,USDC,USD Coin,4208024428.0,excluded,stablecoin,,,,,
+12,WBTC,Wrapped Bitcoin,3819401683.0,excluded,wrapped token,,,,,
+13,BSV,Bitcoin SV,3190473984.0,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,175780.31291
+14,XLM,Stellar,2989656211.0,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,11427835.090084
+15,EOS,EOS,2625024379.0,in universe,history ends (delisted / collapsed),bitfinex,2021-01-01,2026-07-03,2004.0,252382.53752191606
+16,XMR,Monero,2458046205.0,in universe,,bitfinex,2021-01-01,2026-10-08,2107.0,556779.3677470309
+17,THETA,THETA,2121383112.0,in universe,,gate,2021-01-01,2026-10-08,2107.0,243553.7677596
+18,TRX,TRON,2113567007.0,in universe,,gate,2021-01-01,2026-10-08,2107.0,3601746.181344
+19,XEM,NEM,1894334538.0,in universe,,gate,2021-01-01,2026-10-08,2107.0,54889.705741341066
+20,VET,VeChain,1667128429.0,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,1153186.013868
+21,XTZ,Tezos,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,862912.958215
+22,CEL,Celsius,,in universe,,gate,2021-04-09,2026-10-08,2009.0,37349.48966687527
+23,UNI,Uniswap,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,5746046.11169526
+24,LEO,UNUS SED LEO,,in universe,,bitfinex,2021-01-01,2026-10-08,2107.0,193195.14332423243
+25,CRO,Crypto.com Coin,,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,493522.28296119964
+26,DOGE,Dogecoin,,in universe,,gate,2021-01-01,2026-10-08,2107.0,19063580.066762745
+27,ATOM,Cosmos,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,3795443.7552
+28,DAI,Dai,,excluded,stablecoin,,,,,
+29,BUSD,Binance USD,,excluded,stablecoin,,,,,
+30,NEO,Neo,,in universe,,kucoin,2021-01-01,2026-10-08,2107.0,304370.80578009563
+31,AAVE,Aave,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,7064833.6512
+32,SNX,Synthetix,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,1115694.6203370001
+33,REV,Revain,,dropped,no free price history found,,,,,
+34,HT,Huobi Token,,in universe,,gate,2021-01-01,2026-10-08,2107.0,103016.84514455052
+35,FIL,Filecoin,,in universe,,gate,2021-01-01,2026-10-08,2107.0,5304040.596192
+36,DASH,Dash,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,545085.141484317
+37,IOTA,IOTA,,in universe,,bitfinex,2021-01-01,2026-10-08,2107.0,193960.58757372023
+38,ETC,Ethereum Classic,,in universe,,gate,2021-01-01,2026-10-08,2107.0,2597389.245978669
+39,ZIL,Zilliqa,,in universe,,gate,2021-01-01,2026-10-08,2107.0,147714.1023372
+40,YFI,yearn.finance,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,1245956.64424051
+41,MKR,Maker,,in universe,history ends (delisted / collapsed),coinbase,2021-01-01,2026-01-12,1838.0,3185540.948056935
+42,FTT,FTX Token,,in universe,history ends (delisted / collapsed),bitfinex,2021-01-01,2022-11-29,693.0,23917.068371559
+43,COMP,Compound,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,1139836.1974799999
+44,ZEC,Zcash,,in universe,,coinbase,2021-01-01,2026-10-08,2107.0,1695670.440730408
+45,SUSHI,SushiSwap,,in universe,,gate,2021-01-01,2026-10-08,2107.0,561259.4856359999

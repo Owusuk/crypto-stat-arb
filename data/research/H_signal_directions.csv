@@ -1,0 +1,52 @@
+family,signal,Gross IS (momentum sign),Direction (from IS),Gross OOS (momentum sign)
+Cross-sectional,CS L=1,-0.846232513293987,reversal,-0.3706327080155193
+Cross-sectional,CS L=1 x volume,-0.6071178377005939,reversal,0.17852439519273042
+Cross-sectional,CS L=2,-0.8900669706513351,reversal,-0.3977799056372954
+Cross-sectional,CS L=2 x volume,-0.5661709300359339,reversal,0.1981160413507239
+Cross-sectional,CS L=3,-0.5492765527390924,reversal,-0.3974683809215879
+Cross-sectional,CS L=3 x volume,-0.38120520375836686,reversal,0.2556176067964545
+Cross-sectional,CS L=5,-0.5904037665447001,reversal,-0.21636402395575277
+Cross-sectional,CS L=5 x volume,-0.5599627833535306,reversal,0.4158762777566917
+Cross-sectional,CS L=7,0.010945963766122899,momentum,-0.17487294661652575
+Cross-sectional,CS L=7 x volume,-0.09065272098188726,reversal,0.28635502661424433
+Cross-sectional,CS L=14,0.024775916148851607,momentum,-0.009822448071649326
+Cross-sectional,CS L=14 x volume,0.01387087217640649,momentum,0.40806479073495494
+Cross-sectional,CS L=21,-0.28553943146789856,reversal,0.19126457649121031
+Cross-sectional,CS L=30,-0.39230426658430295,reversal,0.01563295193227362
+Cross-sectional,CS L=60,-0.518744556805533,reversal,0.08285928268346993
+Cross-sectional,CS L=60 skip=14,-0.3837476436768166,reversal,0.2853762110467532
+Cross-sectional,CS L=90,-0.7505407298028304,reversal,-0.21488043363042086
+Cross-sectional,CS L=90 skip=14,-0.49195486904607766,reversal,-0.08204519303264445
+Cross-sectional,CS L=120,-0.700188664274271,reversal,-0.06909137984305706
+Cross-sectional,CS L=120 skip=14,-0.6523327352039643,reversal,-0.08628629777214629
+Time-series,TS L=blend,0.54012861576742,momentum,0.491719850662091
+Time-series,TS L=blend + DVOL filter,0.8702660118714602,momentum,1.0491066598657497
+Time-series,TS L=7,0.3516683615728339,momentum,0.42730259431959483
+Time-series,TS L=7 + DVOL filter,0.6575720316683914,momentum,1.0033325543874856
+Time-series,TS L=14,0.3938802730887296,momentum,0.523959156540279
+Time-series,TS L=14 + DVOL filter,0.7375327243859832,momentum,0.8267395207448138
+Time-series,TS L=30,0.44659385908414123,momentum,0.3702183152196726
+Time-series,TS L=30 + DVOL filter,0.7354737385834096,momentum,0.6923493464913955
+Time-series,TS L=60,-0.21038324207063458,reversal,0.6255682227634879
+Time-series,TS L=60 + DVOL filter,-0.07806301804757436,reversal,1.0296941395340171
+Time-series,TS L=90,-0.38910106483843304,reversal,0.42738698353977306
+Time-series,TS L=90 + DVOL filter,-0.25813576787050885,reversal,0.697088373637285
+Theme,Theme L=7,0.4813813204372922,momentum,0.17481348148641487
+Theme,Theme L=14,0.9949393218515911,momentum,-0.4060202136343584
+Theme,Theme L=21,0.7057209231765272,momentum,0.4332391951122228
+Theme,Theme L=30,0.4990629232295078,momentum,0.18702732026562288
+Theme,Theme L=60,0.45313174959592656,momentum,0.5993941127705177
+Theme,Theme L=90,0.13868325619157737,momentum,0.17408835235896417
+Residual vs market,Residual vs market L=1,-0.8258264010784621,reversal,-0.546948296297566
+Residual vs theme,Residual vs theme L=1,-1.1945887099196004,reversal,-0.522148214947977
+Residual vs market,Residual vs market L=3,-0.6994653250546959,reversal,-0.031110120363465582
+Residual vs theme,Residual vs theme L=3,-1.0059530502732912,reversal,-0.09647677565322407
+Residual vs market,Residual vs market L=7,-0.3580479975324914,reversal,0.09255100036680348
+Residual vs theme,Residual vs theme L=7,-0.4010495220628682,reversal,-0.13807277745502297
+Residual vs market,Residual vs market L=14,-0.34433021391978663,reversal,0.21719269758769888
+Residual vs theme,Residual vs theme L=14,-0.5398381062687341,reversal,-0.013460850806778522
+Residual vs market,Residual vs market L=30,-0.6714750127439957,reversal,0.05538110868893527
+Residual vs theme,Residual vs theme L=30,-0.7756354935146703,reversal,0.041136226680264475
+Residual vs market,Residual vs market L=60,-0.5506629588533805,reversal,0.18238890703395055
+Residual vs theme,Residual vs theme L=60,-0.7629255579253589,reversal,-0.1450647814585782
+Short-term in high-vol regime,Short-term (1d) in high-vol regime,-0.34113999382028537,reversal,-0.19316563714919224

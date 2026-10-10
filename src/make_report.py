@@ -1,9 +1,8 @@
 """
-make_report.py - build crypto_research_report.docx and its PDF in two passes so
-the contents page carries real page numbers.
-
-Pass 1 builds the document, renders it to PDF with LibreOffice and finds the
-page of every heading; pass 2 rebuilds with those page numbers.
+make_report.py - build the V2 report and methodology explainer (.docx + .pdf)
+in two passes so each contents page carries real page numbers.
+Pass 1 builds and renders with LibreOffice and finds the page of every
+heading; pass 2 rebuilds with those page numbers.
 """
 import json
 import os
@@ -14,49 +13,46 @@ import sys
 import fitz  # PyMuPDF
 
 SOFFICE = shutil.which("soffice") or "/Applications/LibreOffice.app/Contents/MacOS/soffice"
-DOCX, PDF = "crypto_research_report.docx", "crypto_research_report.pdf"
-TOC = "data/research/_toc.json"
+DOCS = [
+    ("src/build_report.py", "crypto_research_report_V2.docx", "data/research/_toc.json", "data/research/_heads.json"),
+    ("src/build_explainer.py", "V2_methodology_explainer.docx", "data/research/_toc_explainer.json",
+     "data/research/_heads_explainer.json"),
+]
 
 
-def build():
-    subprocess.run([sys.executable, "src/build_report.py"], check=True)
+def run(builder, toc):
+    subprocess.run([sys.executable, builder], check=True, env={**os.environ, "DOC_TOC": toc})
 
 
-def render():
-    subprocess.run([SOFFICE, "--headless", "--convert-to", "pdf", "--outdir", ".", DOCX],
+def render(docx):
+    subprocess.run([SOFFICE, "--headless", "--convert-to", "pdf", "--outdir", ".", docx],
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
-def heading_pages(heads):
-    d = fitz.open(PDF)
-    pages = []
-    start = 2                              # skip title + contents pages
+def heading_pages(pdf, heads):
+    d = fitz.open(pdf)
+    pages, start = [], 2
     for lvl, text in heads:
-        key = text[:60]
         found = None
         for i in range(start, len(d)):
-            lines = [ln.strip() for ln in d[i].get_text().splitlines()]
-            if any(ln.startswith(key[:40]) for ln in lines):
+            if any(ln.strip().startswith(text[:40]) for ln in d[i].get_text().splitlines()):
                 found = i; break
-        if found is None:
-            found = start
+        found = start if found is None else found
         start = found
-        pages.append((lvl, text, found + 1))
+        pages.append([lvl, text, found + 1])
     return pages
 
 
 if __name__ == "__main__":
-    if os.path.exists(TOC):
-        os.remove(TOC)
-    # pass 1: reserve one blank contents page
-    json.dump([[1, "placeholder", 0]], open(TOC, "w"))
-    build(); render()
-    heads = json.load(open("data/research/_heads.json"))
-    json.dump(heading_pages(heads), open(TOC, "w"))
-    # pass 2: real contents
-    build(); render()
-    # verify the page numbers did not move
-    check = heading_pages(heads)
-    if check != json.load(open(TOC)):
-        json.dump(check, open(TOC, "w")); build(); render()
-    print(f"saved {DOCX} and {PDF}")
+    for builder, docx, toc, heads_f in DOCS:
+        pdf = docx.replace(".docx", ".pdf")
+        json.dump([[1, "placeholder", 0]], open(toc, "w"))
+        run(builder, toc); render(docx)
+        heads = json.load(open(heads_f))
+        json.dump(heading_pages(pdf, heads), open(toc, "w"))
+        run(builder, toc); render(docx)
+        check = heading_pages(pdf, heads)
+        if check != json.load(open(toc)):
+            json.dump(check, open(toc, "w")); run(builder, toc); render(docx)
+        os.remove(heads_f)
+        print(f"saved {docx} and {pdf}")

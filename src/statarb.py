@@ -44,11 +44,13 @@ import statsmodels.api as sm
 # Configuration
 # --------------------------------------------------------------------------- #
 RAW, FIGDIR, DATADIR = "data/crypto_raw_data.csv", "figures", "data"
-ANN = 365                          # crypto trades every calendar day
+import sys as _sys, os as _os
+_sys.path.insert(0, _os.path.dirname(__file__))
+import sa_core as _C
+ANN = _C.ANN                       # class convention: sqrt(252) annualisation
 
-# Universe: drop XRP (long Coinbase listing gap) and MKR (delisted Jan-2026).
-UNIVERSE = ["BTC", "ETH", "SOL", "ADA", "DOGE", "AVAX", "LINK", "LTC",
-            "DOT", "ATOM", "UNI", "BCH", "XLM", "ALGO", "AAVE", "COMP"]
+# Universe: survivorship-free, fixed by market cap on 2021-01-03 (see sa_core / fetch_data).
+UNIVERSE = _C.UNIVERSE
 
 # Walk-forward windows.  Crypto cointegration relationships decay quickly, so we
 # use a shorter formation look-back and re-screen monthly (rather than quarterly)
@@ -78,15 +80,8 @@ FIGSIZE = (11, 5)
 # Data
 # --------------------------------------------------------------------------- #
 def load_panel():
-    df = pd.read_csv(RAW, parse_dates=["date"])
-    df = df[df.asset.isin(UNIVERSE)]
-    close = df.pivot(index="date", columns="asset", values="close").sort_index()
-    full_idx = pd.date_range(close.index.min(), close.index.max(), freq="D")
-    close = close.reindex(full_idx).ffill(limit=3)   # bridge tiny gaps only
-    close = close[UNIVERSE]
-    logp = np.log(close)
-    rets = close.pct_change()
-    return close, logp, rets
+    close, rets, _ = _C.load_panel()
+    return close, np.log(close), rets
 
 
 # --------------------------------------------------------------------------- #
@@ -294,7 +289,7 @@ def metrics(r, bench=None, name="", active_mask=None):
     if r.std() == 0:
         return {"Strategy": name}
     cum = (1 + r).cumprod()
-    ann_ret = cum.iloc[-1] ** (ANN / len(r)) - 1
+    ann_ret = r.mean() * ANN
     ann_vol = r.std() * np.sqrt(ANN)
     sharpe = ann_ret / ann_vol if ann_vol else 0
     dn = r[r < 0].std() * np.sqrt(ANN)

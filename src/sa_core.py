@@ -1,47 +1,65 @@
 """
-sa_core.py
-----------
+sa_core.py  (V2)
+----------------
 Shared building blocks for the crypto statistical-arbitrage research:
 data loading, the "unconstrained" daily backtest used in class, transaction
 costs, and the performance metrics required by the project brief
-(return, volatility, Sharpe, max drawdown, alpha / beta).
+(return, volatility, Sharpe, max drawdown, alpha / beta, correlation to BTC).
 
 Conventions
 ===========
-* Crypto trades every calendar day, so annualisation uses 365 days.
+* Annualisation follows the class convention: Sharpe = mean / std * sqrt(252),
+  annual return = mean * 252, annual volatility = std * sqrt(252), annual
+  alpha = daily intercept * 252.  Crypto trades 365 days a year, so these are
+  a common yardstick across projects rather than calendar-year figures.
+  CAGR is the only calendar measure (compounded over actual calendar years).
 * Weights are formed with information up to the close of day t and earn the
   return of day t+1 (positions are lagged one day - no look-ahead).
-* "Unconstrained" backtest: weights are scaled so that gross exposure
-  sum(|w|) = 1 every day; no leverage, borrow or capacity constraints.
-* Transaction cost = turnover x cost, where turnover = sum |w_t - w_{t-1}|.
-  The brief specifies 20 bps all-in for market orders (7 bps commission +
-  13 bps slippage) and 7 bps for limit orders.
+* "Unconstrained" backtest: gross exposure sum(|w|) = 1 every day; no
+  leverage, borrow or capacity constraints.
+* Transaction cost = turnover x cost, turnover = sum |w_t - w_{t-1}|.
+  Brief: 20 bps all-in for market orders (7 commission + 13 slippage),
+  7 bps for limit orders.
+* Universe: the 40 largest coins by market cap on 2021-01-03 (stablecoins and
+  wrapped tokens excluded) that have price history before the first trade
+  date - see src/fetch_data.py and data/universe.csv.  Coins that collapse or
+  are delisted leave the cross-section when their price history ends.
 """
+import os
+
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
 RAW = "data/crypto_raw_data.csv"
-ANN = 365
+UNIVERSE_FILE = "data/universe.csv"
+ANN = 252              # class convention for annualising Sharpe, return, vol, alpha
+CAL_DAYS = 365         # calendar days per year (CAGR only)
 MARKET_BPS = 20.0
 LIMIT_BPS = 7.0
 
-# XRP has a long Coinbase listing gap (2021-2023) and MKR stops trading in
-# January 2026 (migration to SKY), so both are excluded for data integrity.
-UNIVERSE = ["BTC", "ETH", "SOL", "ADA", "DOGE", "AVAX", "LINK", "LTC",
-            "DOT", "ATOM", "UNI", "BCH", "XLM", "ALGO", "AAVE", "COMP"]
+BT_START = "2021-07-01"      # first trade date
+IS_END = "2023-12-31"        # research period ends here - all design decisions use data up to here
+OOS_START = "2024-01-01"     # hold-out starts here - never used for any decision
 
-# Investment themes used for the theme-momentum test.
-THEMES = {
-    "Payments & Meme": ["BTC", "LTC", "BCH", "XLM", "DOGE"],
-    "Large Smart-Contract L1": ["ETH", "SOL", "AVAX"],
-    "Alt L1": ["ADA", "DOT", "ATOM", "ALGO"],
-    "DeFi & Oracle": ["UNI", "AAVE", "COMP", "LINK"],
+
+def load_universe():
+    u = pd.read_csv(UNIVERSE_FILE)
+    return u[u.status == "in universe"].sort_values("cmc_rank").asset.tolist()
+
+
+UNIVERSE = load_universe() if os.path.exists(UNIVERSE_FILE) else []
+
+# Investment themes (assigned from each project's function, not from returns).
+THEME_MAP = {
+    "Payments & Privacy": ["BTC", "LTC", "BCH", "BSV", "XRP", "XLM", "DOGE", "DASH", "ZEC", "XMR", "XEM"],
+    "Smart-Contract Platforms": ["ETH", "ADA", "DOT", "EOS", "TRX", "XTZ", "ATOM", "NEO", "ETC", "ZIL"],
+    "DeFi & Oracle": ["UNI", "AAVE", "SNX", "YFI", "MKR", "COMP", "SUSHI", "LINK"],
+    "Exchange & CeFi Tokens": ["BNB", "LEO", "CRO", "HT", "FTT", "CEL"],
+    "Data, IoT & Media": ["THETA", "FIL", "VET", "IOTA"],
 }
-
-BT_START = "2021-07-01"      # first date with a broad cross-section
-IS_END = "2023-12-31"        # research (in-sample) period ends here
-OOS_START = "2024-01-01"     # hold-out (out-of-sample) period starts here
+THEMES = {t: [a for a in l if a in UNIVERSE] for t, l in THEME_MAP.items()}
+THEMES = {t: l for t, l in THEMES.items() if l}
 
 
 # --------------------------------------------------------------------------- #
@@ -55,7 +73,11 @@ def load_panel(path=RAW):
     idx = pd.date_range(close.index.min(), close.index.max(), freq="D")
     close = close.reindex(idx).ffill(limit=3)[UNIVERSE]
     vol = vol.reindex(idx)[UNIVERSE]
-    dollar_vol = (close * vol)
+    # a coin whose history has ended leaves the cross-section (no forward fill)
+    last = df.groupby("asset").date.max()
+    for a in UNIVERSE:
+        close.loc[close.index > last[a], a] = np.nan
+    dollar_vol = close * vol
     rets = close.pct_change(fill_method=None)
     return close, rets, dollar_vol
 
@@ -104,8 +126,7 @@ def band(w, threshold):
         diff = tv[t] - cur
         move = np.abs(diff) > threshold
         cur = np.where(move, tv[t], cur)
-        # positions in assets that left the universe are closed
-        cur = np.where(tv[t] == 0, 0.0, cur)
+        cur = np.where(tv[t] == 0, 0.0, cur)     # exited coins are closed
         out[t] = cur
     return pd.DataFrame(out, index=w.index, columns=w.columns)
 
@@ -121,8 +142,7 @@ def backtest(w, rets, cost_bps=MARKET_BPS, start=BT_START, end=None):
     turn = w.diff().abs().sum(axis=1)
     net = gross - turn * cost_bps / 1e4
     out = pd.DataFrame({"gross": gross, "net": net, "turnover": turn})
-    out = out.loc[start:end] if end else out.loc[start:]
-    return out
+    return out.loc[start:end] if end else out.loc[start:]
 
 
 def net_at(bt, cost_bps):
@@ -133,6 +153,7 @@ def net_at(bt, cost_bps):
 # Metrics
 # --------------------------------------------------------------------------- #
 def sharpe(r):
+    """Class convention: mean / std * sqrt(252) on daily returns."""
     r = pd.Series(r).dropna()
     s = r.std()
     return float(r.mean() / s * np.sqrt(ANN)) if s > 0 else np.nan
@@ -152,21 +173,23 @@ def nw_tstat(r, lags=5):
 
 
 def alpha_beta(r, bench, lags=5):
-    """CAPM-style regression r_t = a + b * bench_t + e_t (daily, HAC errors).
-    Returns annualised alpha, beta, and the alpha t-statistic."""
+    """r_t = a + b * bench_t + e_t (daily, Newey-West errors).
+    Returns annualised alpha (x252), beta, alpha t-stat and correlation."""
     d = pd.concat([pd.Series(r), pd.Series(bench)], axis=1).dropna()
     if len(d) < 30 or d.iloc[:, 0].std() == 0:
-        return np.nan, np.nan, np.nan
+        return np.nan, np.nan, np.nan, np.nan
     m = sm.OLS(d.iloc[:, 0].values, sm.add_constant(d.iloc[:, 1].values)).fit(
         cov_type="HAC", cov_kwds={"maxlags": lags})
-    return float(m.params[0] * ANN), float(m.params[1]), float(m.tvalues[0])
+    corr = float(np.corrcoef(d.iloc[:, 0], d.iloc[:, 1])[0, 1])
+    return float(m.params[0] * ANN), float(m.params[1]), float(m.tvalues[0]), corr
 
 
 def perf(r, bench=None, name="", turnover=None):
     r = pd.Series(r).fillna(0)
     ann_ret = r.mean() * ANN
     ann_vol = r.std() * np.sqrt(ANN)
-    cagr = (1 + r).prod() ** (ANN / len(r)) - 1 if len(r) else np.nan
+    years = len(r) / CAL_DAYS
+    cagr = (1 + r).prod() ** (1 / years) - 1 if len(r) else np.nan
     dn = r[r < 0].std() * np.sqrt(ANN)
     dd = max_dd(r)
     out = {"Strategy": name,
@@ -177,8 +200,8 @@ def perf(r, bench=None, name="", turnover=None):
            "HitRate": float((r[r != 0] > 0).mean()) if (r != 0).any() else np.nan,
            "t-stat": nw_tstat(r)}
     if bench is not None:
-        a, b, ta = alpha_beta(r, bench)
-        out.update({"Alpha": a, "Beta": b, "Alpha t": ta})
+        a, b, ta, c = alpha_beta(r, bench)
+        out.update({"Alpha": a, "Beta": b, "Alpha t": ta, "Corr BTC": c})
     if turnover is not None:
         out["Turnover"] = float(pd.Series(turnover).mean())
     return out
